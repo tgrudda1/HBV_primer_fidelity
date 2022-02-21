@@ -4,8 +4,8 @@ This is a rudimentary code to blast your HBV primers against 4,000+ full length 
 Sequences are pulled from http://hvdr.bioinf.wits.ac.za/alignments/. Please cite Bell et al. (DOI: 10.1186/s40064-016-3312-0) if using this for   publication. I don't really know how to code, but if this was helpful for your project please cite the work attached to this code.
 
 ## Requirements
-UNIX shell (I used Linux on a Ubuntu Desktop for this, but you can modify it for use fairly easily):
-NCBI Blast can be installed `sudo apt-get install ncbi-blast+`
+NCBI BLAST for UNIX (this was in Linux Ubuntu):
+https://www.ncbi.nlm.nih.gov/books/NBK52640/
 
 RStudio:
 https://www.rstudio.com/products/rstudio/download/#download
