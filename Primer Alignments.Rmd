@@ -1,0 +1,132 @@
+---
+title: "Primer Alignments"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This is to test the pangenotype applicability of primers.
+First download the Genotypes from http://hvdr.bioinf.wits.ac.za/alignments/
+You want the full-length ones or at least that's what I use.
+```{bash}
+#Make your function to unzip and make blast database
+function BlastDB {
+gunzip -c $1 | makeblastdb -in - -out $1.db -dbtype nucl -title $1.db -parse_seqids
+}
+
+#Make a blast database of each genotype
+
+gunzip -c <file.zip> | makeblastdb -in - -out Gen#db -dbtype nucl -title Gen#db -parse_seqids
+
+##########################
+#starting different stuff or maybe continuing. idk
+
+blastn -task blastn-short -GenF.db -query Primers.fa -out begin.csv -word_size 19 #the length of the primer itself so that it must be a perfect
+
+#####3I made a shell for this so I would just come back to that later and use it. It's the PrimerBlast2.sh on the ubuntu computer
+
+
+
+
+```
+
+```{r packages}
+library("tidyverse")
+```
+
+```{r data read in}
+GenA <- data.frame(read.csv( "PrimersA.txt", header=FALSE))
+GenA$V8 <- "A"
+GenA$V9 <- 508
+GenB <- data.frame(read.csv( "PrimersB.txt", header=FALSE))
+GenB$V8 <- "B"
+GenB$V9 <- 1000
+GenC <- data.frame(read.csv( "PrimersC.txt", header=FALSE))
+GenC$V8 <- "C"
+GenC$V9 <- 1543
+GenD <- data.frame(read.csv( "PrimersD.txt", header=FALSE))
+GenD$V8 <- "D"
+GenD$V9 <- 727
+GenE <- data.frame(read.csv( "PrimersE.txt", header=FALSE))
+GenE$V8 <- "E"
+GenE$V9 <- 230
+GenF <- data.frame(read.csv( "PrimersF.txt", header=FALSE))
+GenF$V8 <- "F"
+GenF$V9 <- 170
+GenG <- data.frame(read.csv( "PrimersG.txt", header=FALSE))
+GenG$V8 <- "G"
+GenG$V9 <- 20
+GenH <- data.frame(read.csv( "PrimersH.txt", header=FALSE))
+GenH$V8 <- "H"
+GenH$V9 <- 17
+GenI <- data.frame(read.csv( "PrimersI.txt", header=FALSE))
+GenI$V8 <- "I"
+GenI$V9 <- 29
+
+
+a2i <- rbind(GenA, GenB, GenC, GenD, GenE, GenF, GenG, GenH, GenI)
+colnames(a2i) <- c("primer", "seq", "Evalue", "matches", "mismatches", "pos_score_match", "perc_pos", "GENOTYPE", "gen.len")
+attach(a2i)
+a2i$oligo.length <- ifelse(a2i$primer == "midHBV_F", 19, 0)
+a2i$oligo.length <- ifelse(a2i$primer == "midHBV_P", 25, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "midHBV_R", 18, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "poly_F", 19, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "poly_P", 22, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "poly_R", 20, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "3`HBV_F", 19, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "3`HBV_P", 30, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "3`HBV_R", 19, a2i$oligo.length)
+
+a2i$oligo.length <- ifelse(a2i$primer == "5`HBV_F", 18, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "5`HBV_Pc", 25, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "5`HBV_PT", 25, a2i$oligo.length)
+a2i$oligo.length <- ifelse(a2i$primer == "5`HBV_R", 20, a2i$oligo.length)
+
+a2i$bien <- ifelse(a2i$matches == a2i$oligo.length, "Y", "N")
+a2i$commecicommeca <- ifelse(a2i$oligo.length-a2i$matches < 2, "Y", "N")
+
+a2i.match <- a2i %>%
+  group_by(primer, GENOTYPE, gen.len) %>%
+  summarise(perf.count = length(which(bien == "Y")),
+            offby1.count = length(which(commecicommeca == "Y")))
+
+
+a2i.match$perf.perc <- a2i.match$perf.count/a2i.match$gen.len*100
+a2i.match$offby1.perc <- a2i.match$offby1.count/a2i.match$gen.len*100
+```
+
+```{r}
+fake <- data.frame(postBP = c(rnorm(200, mean=5500, sd=200), rnorm(600, mean=1700, sd=100))
+                   , midHBV = c(rnorm(400, mean=5500, sd=200), rnorm(400, mean=1700, sd=100)))
+
+fake$Source <- ifelse(fake$postBP>4000 & fake$midHBV>4000, "cccDNA source", NA)
+fake$Source <- ifelse(fake$midHBV>4000 & fake$postBP<4000,"iDNA source", fake$Source)
+fake$Source <- ifelse(fake$midHBV<4000, "no transcription", fake$Source)
+
+"#E84545","#AAD457",  "#B55AAD"
+
+ggplot(fake, aes(x=postBP, y=midHBV)) +
+  geom_point(aes(color=Source)) +
+  scale_x_continuous(limits=c(0,6000)) +
+  scale_y_continuous(limits=c(0,6000)) + 
+  labs(title = ""
+       , x = "3`-HBV amplicon"
+       , y = "mid-HBV amplicon") +
+  theme_tufte()  + 
+  theme(legend.position = c(.75, 0.25)
+        , plot.title = element_text(size = 15, face = "bold", hjust = 0.5)
+        , text = element_text(size=30, family="sans", face = "bold")
+        , axis.title.x = element_text(hjust = 0.5)
+        , axis.title.y = element_text(hjust = 0.5)
+        , legend.key.height = unit(1, "cm")
+        , axis.title.y.left = element_text(hjust = 0.5, margin = margin(t = 0, r = 10, b = 0, l = 0), family="sans")
+        , axis.title.y.right = element_text(hjust = 0.5, margin = margin(t = 0, r = 0, b = 0, l = 10), family="sans")
+        , axis.text = element_text(size = 30, family="sans", color = "black")
+        , axis.line = element_line(size = 1)
+        , axis.ticks = element_line(size = 1)
+        , axis.ticks.length =unit(.5,"cm")
+        , panel.background = element_rect(fill = NA, color = "black")
+        )
+
+ggsave(plot = last_plot(), filename = "Patent ddPCR.tiff",path = "Figures", dpi = 200, height = 8, width = 10)
+```
