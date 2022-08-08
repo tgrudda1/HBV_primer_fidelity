@@ -93,40 +93,13 @@ a2i.match <- a2i %>%
 
 a2i.match$perf.perc <- a2i.match$perf.count/a2i.match$gen.len*100
 a2i.match$offby1.perc <- a2i.match$offby1.count/a2i.match$gen.len*100
-```
 
-```{r}
-fake <- data.frame(postBP = c(rnorm(200, mean=5500, sd=200), rnorm(600, mean=1700, sd=100))
-                   , midHBV = c(rnorm(400, mean=5500, sd=200), rnorm(400, mean=1700, sd=100)))
 
-fake$Source <- ifelse(fake$postBP>4000 & fake$midHBV>4000, "cccDNA source", NA)
-fake$Source <- ifelse(fake$midHBV>4000 & fake$postBP<4000,"iDNA source", fake$Source)
-fake$Source <- ifelse(fake$midHBV<4000, "no transcription", fake$Source)
+ggplot(a2i.match, aes(x=GENOTYPE, y=offby1.perc)) +
+  facet_wrap(~primer) +
+  geom_point() +
+  geom_hline(yintercept = 90) +
+  geom_vline(xintercept = 4.5)
 
-"#E84545","#AAD457",  "#B55AAD"
-
-ggplot(fake, aes(x=postBP, y=midHBV)) +
-  geom_point(aes(color=Source)) +
-  scale_x_continuous(limits=c(0,6000)) +
-  scale_y_continuous(limits=c(0,6000)) + 
-  labs(title = ""
-       , x = "3`-HBV amplicon"
-       , y = "mid-HBV amplicon") +
-  theme_tufte()  + 
-  theme(legend.position = c(.75, 0.25)
-        , plot.title = element_text(size = 15, face = "bold", hjust = 0.5)
-        , text = element_text(size=30, family="sans", face = "bold")
-        , axis.title.x = element_text(hjust = 0.5)
-        , axis.title.y = element_text(hjust = 0.5)
-        , legend.key.height = unit(1, "cm")
-        , axis.title.y.left = element_text(hjust = 0.5, margin = margin(t = 0, r = 10, b = 0, l = 0), family="sans")
-        , axis.title.y.right = element_text(hjust = 0.5, margin = margin(t = 0, r = 0, b = 0, l = 10), family="sans")
-        , axis.text = element_text(size = 30, family="sans", color = "black")
-        , axis.line = element_line(size = 1)
-        , axis.ticks = element_line(size = 1)
-        , axis.ticks.length =unit(.5,"cm")
-        , panel.background = element_rect(fill = NA, color = "black")
-        )
-
-ggsave(plot = last_plot(), filename = "Patent ddPCR.tiff",path = "Figures", dpi = 200, height = 8, width = 10)
+# if all dots are in the top left corner of each quadrant, that oligo is likely to work across the four major HBV genotypes
 ```
