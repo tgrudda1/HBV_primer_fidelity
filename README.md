@@ -1,3 +1,20 @@
+#  
+#  
+#  
+#  
+#  
+#  
+#  
+#  
+# ##Use https://github.com/tgrudda1/HBV_oligo_genotype_selection instead.##
+#  
+#  
+#  
+#  
+#  
+#  
+#  
+#  
 # HBV_primer_fidelity
 ## Introduction
 This is a rudimentary code to blast your HBV primers against 4,000+ full length HBV sequences, genotypes A-I, testing for pangenotypicity.
